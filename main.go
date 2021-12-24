@@ -46,7 +46,6 @@ func (eventLoop *EventLoop) Start() {
 func (eventLoop *EventLoop) AwaitFinish() {
 	for len(eventLoop.queue) > 0 {
 		cmd := eventLoop.queue[0]
-		// fmt.Println(cmd)
 		eventLoop.queue = eventLoop.queue[1:]
 		cmd.Exec(eventLoop)
 	}
