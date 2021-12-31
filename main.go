@@ -43,6 +43,18 @@ func (eventLoop *EventLoop) Start() {
 	eventLoop.queue = make([]Command, 0)
 }
 
+func (eventLoop *EventLoop) parseScanner(scanner *bufio.Scanner) {
+	// time.Sleep(1 * time.Nanosecond)
+	for scanner.Scan() {
+		commandLine := scanner.Text()
+		cmd := parse(commandLine) // parse the line to get a Command
+
+		if cmd != nil {
+			eventLoop.Post(cmd)
+		}
+	}
+}
+
 func (eventLoop *EventLoop) AwaitFinish() {
 	for len(eventLoop.queue) > 0 {
 		cmd := eventLoop.queue[0]
@@ -72,7 +84,7 @@ func parse(line string) Command {
 		}
 
 		if len(args) > 2 {
-			arg := fmt.Sprintf("Syntax Error: 'add' command accepts only 2 arguments")
+			arg := "Syntax Error: 'add' command accepts only 2 arguments"
 			return &PrintCommand{arg}
 		}
 
@@ -92,15 +104,7 @@ func main() {
 	if input, err := os.Open(inputFile); err == nil {
 		defer input.Close()
 		scanner := bufio.NewScanner(input)
-
-		for scanner.Scan() {
-			commandLine := scanner.Text()
-			cmd := parse(commandLine) // parse the line to get a Command
-
-			if cmd != nil {
-				eventLoop.Post(cmd)
-			}
-		}
+		eventLoop.parseScanner(scanner)
 	}
 
 	eventLoop.AwaitFinish()
